@@ -7,23 +7,46 @@ from openai import OpenAI
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
 
-TOOLS = [{
-    "type": "function",
-    "function": {
-        "name": "Read",
-        "description": "Read and return the contents of a file",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "file_path": {
-                    "type": "string",
-                    "description": "The path to the file to read"
-                }
-            },
-            "required": ["file_path"]
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "Read",
+            "description": "Read and return the contents of a file",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                        "type": "string",
+                        "description": "The path to the file to read"
+                    }
+                },
+                "required": ["file_path"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "Write",
+            "description": "Write content to a file",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                        "type": "string",
+                        "description": "The path of the file to write to"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "The content to write to the file"
+                    }
+                },
+                "required": ["file_path", "content"]
+            }
         }
     }
-}]
+]
 
 def main():
     p = argparse.ArgumentParser()
@@ -53,10 +76,22 @@ def main():
 
         for tool_call in message.tool_calls:
             arguments = json.loads(tool_call.function.arguments)
-            file_path = arguments["file_path"]
-            print(f"Reading file: {file_path}", file=sys.stderr)
-            with open(file_path, "r") as f:
-                result = f.read()
+            function_name = tool_call.function.name
+
+            if function_name == "Read":
+                file_path = arguments["file_path"]
+                print(f"Reading file: {file_path}", file=sys.stderr)
+                with open(file_path, "r") as f:
+                    result = f.read()
+
+            elif function_name == "Write":
+                file_path = arguments["file_path"]
+                content = arguments["content"]
+                print(f"Writing file: {file_path}", file=sys.stderr)
+                with open(file_path, "w") as f:
+                    f.write(content)
+                result = f"Successfully wrote to {file_path}"
+
             messages.append({
                 "role": "tool",
                 "tool_call_id": tool_call.id,
