@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import json
 from openai import OpenAI
 
 API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -41,8 +42,16 @@ def main():
     if not chat.choices or len(chat.choices) == 0:
         raise RuntimeError("no choices in response")
 
-    print("Logs from your program will appear here!", file=sys.stderr)
-    print(chat.choices[0].message.content)
+    message = chat.choices[0].message
+
+    if message.tool_calls:
+        tool_call = message.tool_calls[0]
+        arguments = json.loads(tool_call.function.arguments)
+        file_path = arguments["file_path"]
+        with open(file_path, "r") as f:
+            print(f.read())
+    else:
+        print(message.content)
 
 if __name__ == "__main__":
     main()
