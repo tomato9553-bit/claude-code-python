@@ -1,34 +1,68 @@
-[![progress-banner](https://backend.codecrafters.io/progress/claude-code/e4a3bf75-f00e-41bf-bfd1-8ab94c515390)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# Claude Code (Python)
 
-This is a starting point for Python solutions to the
-["Build Your own Claude Code" Challenge](https://codecrafters.io/challenges/claude-code).
+A Python implementation of an AI coding agent, built on top of the Anthropic Claude API. Inspired by the CodeCrafters "Build Your Own Claude Code" challenge.
 
-Claude Code is an AI coding assistant that uses Large Language Models (LLMs) to
-understand code and perform actions through tool calls. In this challenge,
-you'll build your own Claude Code from scratch by implementing an LLM-powered
-coding assistant.
+## What it does
 
-Along the way you'll learn about HTTP RESTful APIs, OpenAI-compatible tool
-calling, agent loop, and how to integrate multiple tools into an AI assistant.
+This agent accepts a prompt and autonomously completes tasks by:
+- Reading files from your filesystem
+- Writing files to your filesystem
+- Running shell commands
+- Looping until the task is fully complete
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+## How it works
 
-# Passing the first stage
+The agent uses a loop:
+1. Sends your prompt to Claude
+2. If Claude requests a tool (Read, Write, Bash), executes it
+3. Feeds the result back to Claude
+4. Repeats until Claude gives a final answer
 
-The entry point for your `claude-code` implementation is in `app/main.py`. Study
-and uncomment the relevant code, and submit to pass the first stage:
+## Setup
 
-```sh
-codecrafters submit
-```
+### Prerequisites
+- Python 3.8+
+- An OpenRouter API key (get one at https://openrouter.ai)
 
-# Stage 2 & beyond
+### Installation
+git clone <your-repo-url>
+cd codecrafters-claude-code-python
+pip install openai
 
-Note: This section is for stages 2 and beyond.
+### Configuration
+Set your API key as an environment variable:
 
-1. Ensure you have `uv` installed locally.
-2. Run `./your_program.sh` to run your program, which is implemented in
-   `app/main.py`.
-3. Run `codecrafters submit` to submit your solution to CodeCrafters. Test
-   output will be streamed to your terminal.
+Windows (PowerShell):
+$env:OPENROUTER_API_KEY="your-api-key-here"
+
+Mac/Linux:
+export OPENROUTER_API_KEY="your-api-key-here"
+
+## Usage
+
+python app/main.py -p "Your prompt here"
+
+### Examples
+
+# Read a file and summarize it
+python app/main.py -p "What is in README.md? Summarize it."
+
+# Create a new file
+python app/main.py -p "Create a file called hello.py that prints Hello World"
+
+# Delete a file
+python app/main.py -p "Delete the file called old.txt"
+
+## Tools Available
+
+| Tool      | Description                                      |
+|-----------|--------------------------------------------------|
+| Read      | Reads the contents of a file                     |
+| Write     | Writes content to a file (creates or overwrites) |
+| Bash      | Executes a shell command and returns output      |
+| ListFiles | Lists all files in a directory                   |
+
+## Built With
+- OpenAI Python SDK
+- OpenRouter - API gateway to Claude
+- Anthropic Claude Haiku 4.5
