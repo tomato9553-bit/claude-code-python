@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 import json
+import subprocess
 from openai import OpenAI
 
 API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -43,6 +44,23 @@ TOOLS = [
                     }
                 },
                 "required": ["file_path", "content"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "Bash",
+            "description": "Execute a shell command",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {
+                        "type": "string",
+                        "description": "The command to execute"
+                    }
+                },
+                "required": ["command"]
             }
         }
     }
@@ -91,6 +109,12 @@ def main():
                 with open(file_path, "w") as f:
                     f.write(content)
                 result = f"Successfully wrote to {file_path}"
+
+            elif function_name == "Bash":
+                command = arguments["command"]
+                print(f"Running command: {command}", file=sys.stderr)
+                proc = subprocess.run(command, shell=True, capture_output=True, text=True)
+                result = proc.stdout + proc.stderr
 
             messages.append({
                 "role": "tool",
